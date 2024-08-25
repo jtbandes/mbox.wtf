@@ -1,0 +1,5 @@
+// default tsconfig used for build-related files that are not actually part of the app
+{
+  "extends": "./tsconfig.json",
+  "include": ["*.js", "*.mjs"]
+}
