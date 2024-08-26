@@ -39,7 +39,16 @@
       <span class="speed">{formatSize(analyzer.avgBytesPerSec ?? 0)}/s</span>
     {/if}
     {#if analyzer.result != undefined}
-      <pre>{JSON.stringify(analyzer.result, null, 2)}</pre>
+      <table>
+        <tbody>
+          {#each analyzer.result.sizesBySender as [sender, size]}
+            <tr>
+              <td>{sender}</td>
+              <td>{formatSize(size)}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     {/if}
   </div>
 </main>
@@ -47,20 +56,5 @@
 <style>
   .speed {
     font-feature-settings: "tnum";
-  }
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
   }
 </style>

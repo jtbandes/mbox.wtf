@@ -1,7 +1,7 @@
 import type { AnalyzerMessageFromWorker, AnalyzerMessageToWorker } from "./Analyzer.worker";
 
 type AnalyzerResult = {
-  totalSize: number;
+  sizesBySender: [sender: string, totalSize: number][];
 };
 
 export class Analyzer {
@@ -28,7 +28,7 @@ export class Analyzer {
         case "done":
           this.#running = false;
           this.progress = 1;
-          this.result = { totalSize: msg.totalSize };
+          this.result = { sizesBySender: msg.sizesBySender };
           break;
         case "error":
           this.#running = false;

@@ -8,7 +8,7 @@ export type AnalyzerMessageToWorker = {
 
 export type AnalyzerMessageFromWorker =
   | { op: "progress"; bytesRead: number }
-  | { op: "done"; totalSize: number }
+  | { op: "done"; sizesBySender: [sender: string, totalSize: number][] }
   | { op: "error"; message: string };
 
 self.addEventListener("message", (event) => {
@@ -17,12 +17,15 @@ self.addEventListener("message", (event) => {
 
   void (async () => {
     try {
-      let totalSize = 0;
-      for await (const { length, bytesRead } of readMessages(readLines(file))) {
+      const sizesBySender = new Map<string, number>();
+      for await (const { bytesRead, from, length } of readMessages(readLines(file))) {
         self.postMessage({ op: "progress", bytesRead } satisfies AnalyzerMessageFromWorker);
-        totalSize += length;
+        const key = from ?? "";
+        sizesBySender.set(key, (sizesBySender.get(key) ?? 0) + length);
       }
-      self.postMessage({ op: "done", totalSize } satisfies AnalyzerMessageFromWorker);
+      const entries = Array.from(sizesBySender);
+      entries.sort((a, b) => b[1] - a[1]);
+      self.postMessage({ op: "done", sizesBySender: entries } satisfies AnalyzerMessageFromWorker);
     } catch (err) {
       self.postMessage({ op: "error", message: String(err) } satisfies AnalyzerMessageFromWorker);
     }
