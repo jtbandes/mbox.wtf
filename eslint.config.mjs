@@ -1,6 +1,7 @@
 import eslint from "@eslint/js";
 import tsParser from "@typescript-eslint/parser";
 import eslintPluginSvelte from "eslint-plugin-svelte";
+import globals from "globals";
 import svelteParser from "svelte-eslint-parser";
 import tseslint from "typescript-eslint";
 
@@ -39,7 +40,20 @@ export default tseslint.config(
       parserOptions,
     },
     rules: {
+      "object-shorthand": ["error", "always"],
       "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unnecessary-condition": [
+        "error",
+        { allowConstantLoopConditions: true },
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+      "@typescript-eslint/switch-exhaustiveness-check": "error",
     },
   },
   {
@@ -49,6 +63,9 @@ export default tseslint.config(
       parserOptions: {
         parser: tsParser,
         ...parserOptions,
+      },
+      globals: {
+        ...globals.browser,
       },
     },
   },
