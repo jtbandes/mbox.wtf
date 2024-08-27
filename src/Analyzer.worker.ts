@@ -20,7 +20,7 @@ self.addEventListener("message", (event) => {
       const sizesBySender = new Map<string, number>();
       for await (const { bytesRead, from, length } of readMessages(readLines(file))) {
         self.postMessage({ op: "progress", bytesRead } satisfies AnalyzerMessageFromWorker);
-        const key = from ?? "";
+        const key = typeof from === "object" ? from.address : (from ?? "");
         sizesBySender.set(key, (sizesBySender.get(key) ?? 0) + length);
       }
       const entries = Array.from(sizesBySender);

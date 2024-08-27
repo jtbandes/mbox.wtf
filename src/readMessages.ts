@@ -3,13 +3,32 @@ import type { ReadLinesValue } from "./readLines";
 type ReadMessagesValue = {
   length: number;
   bytesRead: number;
-  from: string | undefined;
+  from: { name: string; address: string } | string | undefined;
 };
 
 type CurrentMessageState = {
   length: number;
-  from: string | undefined;
+  from: { name: string; address: string } | string | undefined;
 };
+
+const ENCODED_WORD_REGEX = /=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi;
+/** https://www.rfc-editor.org/rfc/rfc2047 */
+function decodeQuotedPrintable(str: string): string {
+  return str.replace(ENCODED_WORD_REGEX, (_, charset: string, encoding: string, text: string) => {
+    if (charset !== "utf-8") {
+      throw new Error(`Unsupported charset: ${charset}`);
+    }
+    if (encoding.toLowerCase() === "b") {
+      return atob(text);
+    } else {
+      return text.replace(/=([0-9A-F]{2})|_/gi, (substring, hex: string) =>
+        substring.length === 1 ? " " : String.fromCharCode(Number.parseInt(hex, 16)),
+      );
+    }
+  });
+}
+
+const NAME_WITH_ADDRESS_REGEX = /^\s*"?(.+?)"?\s*<([^@>]+@[^>]+)>\s*$/i;
 
 export async function* readMessages(
   linesReader: AsyncIterable<ReadLinesValue>,
@@ -39,8 +58,14 @@ export async function* readMessages(
 
       curMessage.length += line.length;
       if (line.startsWith("From: ")) {
-        // Force the string to be copied: https://issues.chromium.org/issues/41480525
-        curMessage.from = JSON.parse(JSON.stringify(line.substring("From: ".length))) as string;
+        const from = decodeQuotedPrintable(line.substring("From: ".length));
+        const addrMatch = NAME_WITH_ADDRESS_REGEX.exec(from);
+        if (addrMatch) {
+          curMessage.from = { name: addrMatch[1]!, address: addrMatch[2]! };
+        } else {
+          // Force the string to be copied: https://issues.chromium.org/issues/41480525
+          curMessage.from = JSON.parse(JSON.stringify(from)) as string;
+        }
       }
     }
   }

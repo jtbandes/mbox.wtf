@@ -17,7 +17,14 @@ export async function* readLines(file: File): AsyncGenerator<ReadLinesValue> {
     let newlineOffset;
     const lines: string[] = [];
     while ((newlineOffset = str.indexOf("\n", offset)) >= 0) {
-      lines.push(str.slice(offset, newlineOffset));
+      lines.push(
+        str.slice(
+          offset,
+          newlineOffset > 0 && str.charCodeAt(newlineOffset - 1) === /*\r*/ 0x0d
+            ? newlineOffset - 1
+            : newlineOffset,
+        ),
+      );
       offset = newlineOffset + 1;
     }
     if (lines.length > 0) {
