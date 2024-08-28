@@ -22,9 +22,16 @@ export class Analyzer {
   /** Total elapsed time (ms) */
   elapsed = $state<number | undefined>();
 
+  #reset() {
+    this.progress = 0;
+    this.avgBytesPerSec = undefined;
+    this.result = undefined;
+    this.error = undefined;
+    this.elapsed = undefined;
+  }
+
   constructor() {
     this.#worker = new Worker(new URL("./Analyzer.worker", import.meta.url), { type: "module" });
-    //TODO: handle worker error
     this.#worker.addEventListener("message", (event) => {
       const msg = event.data as AnalyzerMessageFromWorker;
       switch (msg.op) {
@@ -45,16 +52,19 @@ export class Analyzer {
           break;
       }
     });
+    this.#worker.addEventListener("error", (event) => {
+      this.#running = false;
+      this.error = event.message;
+    });
   }
 
   run(file: File) {
     if (this.#running) {
       throw new Error("Analyzer is already running");
     }
+    this.#reset();
     this.#running = true;
     this.#totalSize = file.size;
-    this.error = undefined;
-    this.progress = 0;
 
     this.#startTime = performance.now();
     this.#worker.postMessage({ op: "start", file } satisfies AnalyzerMessageToWorker);
