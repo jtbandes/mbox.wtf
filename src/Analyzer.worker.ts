@@ -25,8 +25,14 @@ self.addEventListener("message", (event) => {
     try {
       const sizesBySender = new Map<string, number>();
       let bytesReadAtLastUpdate = 0;
+      let lastProgressUpdateTime = performance.now();
       for await (const { bytesRead, from, length } of readMessages(readLines(file))) {
-        send({ op: "progress", bytesRead, done: false });
+        const now = performance.now();
+        if (now - lastProgressUpdateTime > 33) {
+          // no need to send updates to main thread at more than ~30fps
+          send({ op: "progress", bytesRead, done: false });
+          lastProgressUpdateTime = now;
+        }
         const key = typeof from === "object" ? from.address : (from ?? "");
         sizesBySender.set(key, (sizesBySender.get(key) ?? 0) + length);
         if (bytesRead - bytesReadAtLastUpdate > BYTES_PER_UPDATE) {

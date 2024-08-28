@@ -26,9 +26,15 @@
     });
   });
 
-  let searchField = $state<HTMLInputElement | undefined>();
+  let fieldFocused = $state(false); // separate state variable to focus only once, not whenever .result changes
   $effect(() => {
     if (analyzer.result != undefined) {
+      fieldFocused = true;
+    }
+  });
+  let searchField = $state<HTMLInputElement | undefined>();
+  $effect(() => {
+    if (fieldFocused) {
       searchField?.focus();
     }
   });
@@ -52,8 +58,12 @@
           accept=".mbox"
         />
       </label>
-      {#if analyzer.progress != undefined}
-        <span class="speed">{formatSize(analyzer.avgBytesPerSec ?? 0)}/s</span>
+      {#if analyzer.progress != undefined && analyzer.progress !== 1}
+        <span class="speed">
+          {(analyzer.progress * 100).toFixed(1)}% ({formatSize(analyzer.avgBytesPerSec ?? 0)}/s)
+        </span>
+      {:else if analyzer.progress === 1 && analyzer.elapsed != undefined}
+        <span>Done in {(analyzer.elapsed / 1000).toFixed(1)} seconds</span>
       {/if}
     </div>
     {#if analyzer.error != undefined}
@@ -81,6 +91,11 @@
             <tr>
               <td class="total">Total</td>
               <td class="total">{formatSize(totalSize)}</td>
+            </tr>
+          {:else}
+            <tr>
+              <td>—</td>
+              <td>—</td>
             </tr>
           {/if}
           {#each filteredResults ?? [] as [sender, size]}
@@ -135,10 +150,13 @@
     top: 0;
     left: 0;
   }
+  .search-bar {
+    display: flex;
+  }
   .search-bar input {
+    flex-grow: 1;
     padding: 0.5em 0.8em;
     border-radius: 2em;
-    width: 50%;
   }
   table {
     border-collapse: collapse;

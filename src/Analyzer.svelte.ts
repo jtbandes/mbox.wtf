@@ -19,6 +19,8 @@ export class Analyzer {
   result = $state<AnalyzerResult | undefined>();
   /** Error encountered during parsing. */
   error = $state<string | undefined>();
+  /** Total elapsed time (ms) */
+  elapsed = $state<number | undefined>();
 
   constructor() {
     this.#worker = new Worker(new URL("./Analyzer.worker", import.meta.url), { type: "module" });
@@ -26,11 +28,14 @@ export class Analyzer {
     this.#worker.addEventListener("message", (event) => {
       const msg = event.data as AnalyzerMessageFromWorker;
       switch (msg.op) {
-        case "progress":
+        case "progress": {
           this.progress = msg.bytesRead / this.#totalSize;
-          this.avgBytesPerSec = (msg.bytesRead / (performance.now() - this.#startTime)) * 1000;
+          const elapsed = performance.now() - this.#startTime;
+          this.avgBytesPerSec = (msg.bytesRead / elapsed) * 1000;
+          this.elapsed = elapsed;
           this.#running = !msg.done;
           break;
+        }
         case "result":
           this.result = { sizesBySender: msg.sizesBySender };
           break;

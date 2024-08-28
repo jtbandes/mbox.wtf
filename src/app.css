@@ -75,6 +75,11 @@ input[type="text"]:disabled {
   opacity: var(--theme-opacity-disabled);
 }
 
+input[type="file"] {
+  font-size: 1em;
+  font-family: inherit;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

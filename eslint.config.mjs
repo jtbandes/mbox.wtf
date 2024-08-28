@@ -40,6 +40,7 @@ export default tseslint.config(
       parserOptions,
     },
     rules: {
+      curly: ["error"],
       "object-shorthand": ["error", "always"],
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-unnecessary-condition": [
