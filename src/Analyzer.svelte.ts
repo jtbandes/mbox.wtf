@@ -1,4 +1,5 @@
 import type { AnalyzerMessageFromWorker, AnalyzerMessageToWorker } from "./Analyzer.worker";
+import AnalyzerWorker from "./Analyzer.worker?worker&inline";
 
 type AnalyzerResult = {
   sizesBySender: [sender: string, totalSize: number][];
@@ -31,7 +32,7 @@ export class Analyzer {
   }
 
   constructor() {
-    this.#worker = new Worker(new URL("./Analyzer.worker", import.meta.url), { type: "module" });
+    this.#worker = new AnalyzerWorker();
     this.#worker.addEventListener("message", (event) => {
       const msg = event.data as AnalyzerMessageFromWorker;
       switch (msg.op) {
