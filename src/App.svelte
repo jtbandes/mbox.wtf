@@ -92,18 +92,20 @@
               <td class="total">Total</td>
               <td class="total">{formatSize(totalSize)}</td>
             </tr>
+          {/if}
+          {#if filteredResults && filteredResults.length > 0}
+            {#each filteredResults as [sender, size]}
+              <tr>
+                <td>{sender}</td>
+                <td class="size">{formatSize(size)}</td>
+              </tr>
+            {/each}
           {:else}
             <tr>
               <td>—</td>
               <td>—</td>
             </tr>
           {/if}
-          {#each filteredResults ?? [] as [sender, size]}
-            <tr>
-              <td>{sender}</td>
-              <td class="size">{formatSize(size)}</td>
-            </tr>
-          {/each}
         </tbody>
       </table>
     </div>
