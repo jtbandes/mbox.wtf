@@ -11,21 +11,36 @@ type CurrentMessageState = {
   from: { name: string; address: string } | string | undefined;
 };
 
+/** Force the string to be copied: https://issues.chromium.org/issues/41480525 */
+function cloneString(str: string): string {
+  return JSON.parse(JSON.stringify(str)) as string;
+}
+
 const ENCODED_WORD_REGEX = /=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi;
 /** https://www.rfc-editor.org/rfc/rfc2047 */
 function decodeQuotedPrintable(str: string): string {
-  return str.replace(ENCODED_WORD_REGEX, (_, charset: string, encoding: string, text: string) => {
-    if (charset !== "utf-8") {
-      throw new Error(`Unsupported charset: ${charset}`);
-    }
-    if (encoding.toLowerCase() === "b") {
-      return atob(text);
-    } else {
-      return text.replace(/=([0-9A-F]{2})|_/gi, (substring, hex: string) =>
-        substring.length === 1 ? " " : String.fromCharCode(Number.parseInt(hex, 16)),
-      );
-    }
-  });
+  return str.replace(
+    ENCODED_WORD_REGEX,
+    (match, charset: string, encoding: string, text: string) => {
+      const charsetLower = charset.toLowerCase();
+      if (
+        charsetLower !== "utf-8" &&
+        charsetLower !== "us-ascii" &&
+        charsetLower !== "iso-8859-1"
+      ) {
+        console.warn(`Unsupported charset: ${charset}`, match);
+        return match;
+      }
+      // TODO: need to actually run through TextDecoder
+      if (encoding.toLowerCase() === "b") {
+        return atob(text);
+      } else {
+        return text.replace(/=([0-9A-F]{2})|_/gi, (substring, hex: string) =>
+          substring.length === 1 ? " " : String.fromCharCode(Number.parseInt(hex, 16)),
+        );
+      }
+    },
+  );
 }
 
 const NAME_WITH_ADDRESS_REGEX = /^\s*"?(.+?)"?\s*<([^@>]+@[^>]+)>\s*$/i;
@@ -61,10 +76,12 @@ export async function* readMessages(
         const from = decodeQuotedPrintable(line.substring("From: ".length));
         const addrMatch = NAME_WITH_ADDRESS_REGEX.exec(from);
         if (addrMatch) {
-          curMessage.from = { name: addrMatch[1]!, address: addrMatch[2]! };
+          curMessage.from = {
+            name: cloneString(addrMatch[1]!),
+            address: cloneString(addrMatch[2]!),
+          };
         } else {
-          // Force the string to be copied: https://issues.chromium.org/issues/41480525
-          curMessage.from = JSON.parse(JSON.stringify(from)) as string;
+          curMessage.from = cloneString(from);
         }
       }
     }
