@@ -4,16 +4,21 @@ type AnalyzerResult = {
   sizesBySender: [sender: string, totalSize: number][];
 };
 
+/** Manages a worker thread that parses an mbox file asynchronously. */
 export class Analyzer {
+  #worker: Worker;
   #totalSize = 0;
   #startTime = 0;
-  progress = $state<number | undefined>();
   #running = false;
-  result = $state<AnalyzerResult | undefined>();
-  avgBytesPerSec = $state<number | undefined>();
-  error = $state<string | undefined>();
 
-  #worker: Worker;
+  /** 0-1 indicating current progress */
+  progress = $state<number | undefined>();
+  /** Parsing speed in bytes per second */
+  avgBytesPerSec = $state<number | undefined>();
+  /** Result of parsing the mbox file. May update more than once throughout decoding. */
+  result = $state<AnalyzerResult | undefined>();
+  /** Error encountered during parsing. */
+  error = $state<string | undefined>();
 
   constructor() {
     this.#worker = new Worker(new URL("./Analyzer.worker", import.meta.url), { type: "module" });
@@ -24,10 +29,9 @@ export class Analyzer {
         case "progress":
           this.progress = msg.bytesRead / this.#totalSize;
           this.avgBytesPerSec = (msg.bytesRead / (performance.now() - this.#startTime)) * 1000;
+          this.#running = !msg.done;
           break;
-        case "done":
-          this.#running = false;
-          this.progress = 1;
+        case "result":
           this.result = { sizesBySender: msg.sizesBySender };
           break;
         case "error":

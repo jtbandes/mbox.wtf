@@ -7,9 +7,15 @@ export type AnalyzerMessageToWorker = {
 };
 
 export type AnalyzerMessageFromWorker =
-  | { op: "progress"; bytesRead: number }
-  | { op: "done"; sizesBySender: [sender: string, totalSize: number][] }
+  | { op: "progress"; bytesRead: number; done: boolean }
+  | { op: "result"; sizesBySender: [sender: string, totalSize: number][] }
   | { op: "error"; message: string };
+
+function send(msg: AnalyzerMessageFromWorker) {
+  self.postMessage(msg);
+}
+
+const BYTES_PER_UPDATE = 500 * 1024 * 1024; // 500MB
 
 self.addEventListener("message", (event) => {
   const msg = event.data as AnalyzerMessageToWorker;
@@ -18,16 +24,23 @@ self.addEventListener("message", (event) => {
   void (async () => {
     try {
       const sizesBySender = new Map<string, number>();
+      let bytesReadAtLastUpdate = 0;
       for await (const { bytesRead, from, length } of readMessages(readLines(file))) {
-        self.postMessage({ op: "progress", bytesRead } satisfies AnalyzerMessageFromWorker);
+        send({ op: "progress", bytesRead, done: false });
         const key = typeof from === "object" ? from.address : (from ?? "");
         sizesBySender.set(key, (sizesBySender.get(key) ?? 0) + length);
+        if (bytesRead - bytesReadAtLastUpdate > BYTES_PER_UPDATE) {
+          send({
+            op: "result",
+            sizesBySender: Array.from(sizesBySender).sort((a, b) => b[1] - a[1]),
+          });
+          bytesReadAtLastUpdate = bytesRead;
+        }
       }
-      const entries = Array.from(sizesBySender);
-      entries.sort((a, b) => b[1] - a[1]);
-      self.postMessage({ op: "done", sizesBySender: entries } satisfies AnalyzerMessageFromWorker);
+      send({ op: "result", sizesBySender: Array.from(sizesBySender).sort((a, b) => b[1] - a[1]) });
+      send({ op: "progress", bytesRead: file.size, done: true });
     } catch (err) {
-      self.postMessage({ op: "error", message: String(err) } satisfies AnalyzerMessageFromWorker);
+      send({ op: "error", message: String(err) });
     }
   })();
 });
