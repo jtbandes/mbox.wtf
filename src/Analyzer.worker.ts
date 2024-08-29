@@ -17,6 +17,8 @@ function send(msg: AnalyzerMessageFromWorker) {
 
 const BYTES_PER_UPDATE = 500 * 1024 * 1024; // 500MB
 
+console.info("Worker initialized");
+
 self.addEventListener("message", (event) => {
   const msg = event.data as AnalyzerMessageToWorker;
   const { file } = msg;

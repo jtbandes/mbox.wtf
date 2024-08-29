@@ -7,7 +7,7 @@ type AnalyzerResult = {
 
 /** Manages a worker thread that parses an mbox file asynchronously. */
 export class Analyzer {
-  #worker: Worker;
+  #worker: Worker | undefined;
   #totalSize = 0;
   #startTime = 0;
   #running = false;
@@ -32,36 +32,46 @@ export class Analyzer {
   }
 
   constructor() {
-    this.#worker = new AnalyzerWorker();
-    this.#worker.addEventListener("message", (event) => {
-      const msg = event.data as AnalyzerMessageFromWorker;
-      switch (msg.op) {
-        case "progress": {
-          this.progress = msg.bytesRead / this.#totalSize;
-          const elapsed = performance.now() - this.#startTime;
-          this.avgBytesPerSec = (msg.bytesRead / elapsed) * 1000;
-          this.elapsed = elapsed;
-          this.#running = !msg.done;
-          break;
+    try {
+      this.#worker = new AnalyzerWorker();
+      this.#worker.addEventListener("message", (event) => {
+        const msg = event.data as AnalyzerMessageFromWorker;
+        switch (msg.op) {
+          case "progress": {
+            this.progress = msg.bytesRead / this.#totalSize;
+            const elapsed = performance.now() - this.#startTime;
+            this.avgBytesPerSec = (msg.bytesRead / elapsed) * 1000;
+            this.elapsed = elapsed;
+            this.#running = !msg.done;
+            break;
+          }
+          case "result":
+            this.result = { sizesBySender: msg.sizesBySender };
+            break;
+          case "error":
+            this.#running = false;
+            this.error = msg.message;
+            break;
         }
-        case "result":
-          this.result = { sizesBySender: msg.sizesBySender };
-          break;
-        case "error":
-          this.#running = false;
-          this.error = msg.message;
-          break;
-      }
-    });
-    this.#worker.addEventListener("error", (event) => {
+      });
+      this.#worker.addEventListener("error", (event) => {
+        console.error(event);
+        this.#running = false;
+        this.error = String(event.error);
+      });
+    } catch (err) {
+      console.error(err);
       this.#running = false;
-      this.error = event.message;
-    });
+      this.error = String(err);
+    }
   }
 
   run(file: File) {
     if (this.#running) {
       throw new Error("Analyzer is already running");
+    }
+    if (!this.#worker) {
+      return;
     }
     this.#reset();
     this.#running = true;
