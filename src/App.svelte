@@ -45,10 +45,39 @@
 </script>
 
 <div class="wrapper">
+  {#if analyzer.progress != undefined && analyzer.progress !== 1}
+    <div class="progress-bar" style:width={`${analyzer.progress * 100}%`} out:fade></div>
+  {/if}
+  <aside>
+    <p>
+      <strong>See how much space your emails take up!</strong><br />
+      Upload a <code>.mbox</code> file (for example, an export of your Gmail data from
+      <a
+        href="https://support.google.com/accounts/answer/3024190?hl=en"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Google Takeout
+      </a>). You’ll see a breakdown of storage space by <code>From:</code> address.
+    </p>
+    <p>
+      <strong>Privacy? 🙀</strong><br />
+      mbox.wtf processes your data locally and doesn’t send it anywhere. In fact, <em>it can’t</em>.
+      A strict
+      <a
+        href="https://csp-evaluator.withgoogle.com/?csp=https://mbox.wtf"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Content Security Policy
+      </a>
+      prevents this webpage from making any network connections.
+      <a href="https://github.com/jtbandes/mbox.wtf" target="_blank" rel="noreferrer">
+        Read more on GitHub.
+      </a>
+    </p>
+  </aside>
   <header>
-    {#if analyzer.progress != undefined && analyzer.progress !== 1}
-      <div class="progress-bar" style:width={`${analyzer.progress * 100}%`} out:fade></div>
-    {/if}
     <div class="input-bar">
       <label>
         Select a .mbox file: <input
@@ -145,12 +174,20 @@
     gap: 1rem;
     position: relative;
   }
+  aside {
+    font-size: 14px;
+    background-color: var(--theme-box-bg);
+    border: 2px solid var(--theme-box-border);
+    border-radius: 8px;
+    padding: 0 0.8em;
+  }
   .progress-bar {
-    position: absolute;
-    height: 2px;
-    background-color: var(--theme-primary);
+    position: fixed;
+    z-index: 1;
     top: 0;
     left: 0;
+    height: 2px;
+    background-color: var(--theme-primary);
   }
   .search-bar {
     display: flex;
@@ -181,5 +218,10 @@
   }
   tr:hover td {
     background-color: var(--theme-hover-bg);
+  }
+  @media (prefers-color-scheme: dark) {
+    header {
+      background: rgba(36, 36, 36, 0.9);
+    }
   }
 </style>

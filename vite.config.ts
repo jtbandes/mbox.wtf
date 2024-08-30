@@ -51,7 +51,7 @@ function generateHeadersPlugin(): Plugin {
         const cspDirectives = [
           // sandbox seems to work in Chrome and Firefox, but not Safari
           // "sandbox allow-scripts",
-          "default-src",
+          "default-src 'none'",
           `script-src-elem ${scriptSrcElemHashes.map((hash) => `'${hash}'`).join(" ")}`,
           `style-src-elem ${styleSrcElemHashes.map((hash) => `'${hash}'`).join(" ")}`,
           "worker-src blob:",
@@ -63,7 +63,7 @@ function generateHeadersPlugin(): Plugin {
           name: CLOUDFLARE_HEADERS_FILE_NAME,
           originalFileName: null,
           needsCodeReference: false,
-          source: `/*\n  Content-Security-Policy: ${cspDirectives.join("; ")}`,
+          source: `/*\n  Content-Security-Policy: ${cspDirectives.join("; ")};`,
         };
       },
     },
