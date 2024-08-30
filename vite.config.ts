@@ -97,4 +97,7 @@ function generateHeadersPlugin(): Plugin {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [svelte(), viteSingleFile(), generateHeadersPlugin()],
+  build: {
+    assetsInlineLimit: 0,
+  },
 });
