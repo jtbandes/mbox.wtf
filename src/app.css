@@ -13,7 +13,9 @@
   -moz-osx-font-smoothing: grayscale;
 
   --theme-primary: #3c73ec;
-  --theme-inactive: #bec2ca;
+  --theme-inactive-border: #bec2ca;
+  --theme-control-bg: #f9f9f9;
+  --theme-hover-border: #959aa3;
   --theme-hover-bg: #f3f3f3;
   --theme-box-bg: #dce6fc;
   --theme-box-border: #9db4e6;
@@ -48,26 +50,29 @@ h1 {
 }
 
 button {
+  color: inherit;
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  border: 2px solid var(--theme-inactive-border);
+  padding: 0.2em 0.6em;
   font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  transition: border-color 0.25s;
+  background-color: var(--theme-control-bg);
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--theme-hover-border);
+  background-color: var(--theme-hover-bg);
+}
+button:active {
+  background-color: var(--theme-active-bg);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
+  border-color: var(--theme-primary);
 }
 
 input[type="text"] {
-  border: 2px solid var(--theme-inactive);
+  border: 2px solid var(--theme-inactive-border);
   font-size: 1em;
 }
 input[type="text"]:focus,
@@ -94,7 +99,7 @@ p {
     background-color: #242424;
 
     --theme-primary: #6e92e1;
-    --theme-inactive: #6a6a6a;
+    --theme-inactive-border: #6a6a6a;
     --theme-hover-bg: #383838;
     --theme-box-bg: #222a3c;
     --theme-box-border: #646e84;

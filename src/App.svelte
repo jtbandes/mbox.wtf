@@ -7,9 +7,11 @@
   const analyzer = new Analyzer();
 
   let fileInput: HTMLInputElement | undefined;
+  let selectedFileName = $state<string | undefined>();
   function handleChange(_event: Event) {
     if (fileInput?.files?.[0]) {
       analyzer.run(fileInput.files[0]);
+      selectedFileName = fileInput.files[0].name;
     }
   }
 
@@ -86,12 +88,10 @@
   <header>
     <div class="input-bar">
       <label>
-        Select a .mbox file: <input
-          type="file"
-          bind:this={fileInput}
-          onchange={handleChange}
-          accept=".mbox"
-        />
+        Select a .mbox file:
+        <button onclick={() => fileInput?.click()}>Choose File</button>
+        <span class="filename">{selectedFileName}</span>
+        <input type="file" bind:this={fileInput} onchange={handleChange} accept=".mbox" />
       </label>
       {#if analyzer.progress != undefined && analyzer.progress !== 1}
         <span class="speed">
@@ -131,7 +131,7 @@
           {#if filteredResults && filteredResults.length > 0}
             {#each filteredResults as [sender, size]}
               <tr>
-                <td>{sender}</td>
+                <td class="sender">{sender}</td>
                 <td class="size">{formatSize(size)}</td>
               </tr>
             {/each}
@@ -177,8 +177,16 @@
   }
   .input-bar {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem 1rem;
     position: relative;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+  .input-bar input {
+    display: none;
+  }
+  .filename {
+    font-weight: bold;
   }
   aside {
     font-size: 14px;
@@ -213,8 +221,10 @@
   th {
     text-align: left;
   }
-  th.sender {
-    min-width: 30vw;
+  th.sender,
+  td.sender {
+    min-width: calc(min(500px, 30vw));
+    word-break: break-word;
   }
   td.total {
     font-weight: bold;
