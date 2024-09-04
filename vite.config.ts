@@ -1,10 +1,11 @@
-import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
-import { defineConfig, Plugin } from "vite";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { viteSingleFile } from "vite-plugin-singlefile";
 import * as cheerio from "cheerio";
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { optimize } from "svgo";
+import { defineConfig, Plugin } from "vite";
+import { viteSingleFile } from "vite-plugin-singlefile";
 
 const CLOUDFLARE_HEADERS_FILE_NAME = "_headers";
 
@@ -69,13 +70,13 @@ function generateHeadersPlugin(): Plugin {
     },
 
     // Read _headers file and set headers for preview server
-    configurePreviewServer(server) {
-      const headers = fs
-        .readFileSync(
+    async configurePreviewServer(server) {
+      const headers = (
+        await fs.readFile(
           path.join(server.config.root, server.config.build.outDir, CLOUDFLARE_HEADERS_FILE_NAME),
           "utf-8",
         )
-        .split("\n");
+      ).split("\n");
       const firstLine = headers.shift();
       if (firstLine !== "/*") {
         throw new Error(`Unexpected _headers pattern: ${firstLine}`);
@@ -94,9 +95,24 @@ function generateHeadersPlugin(): Plugin {
   };
 }
 
+/**
+ * Embed the favicon/logo as a `data:` URI into index.html.
+ */
+function faviconPlugin(): Plugin {
+  return {
+    name: "mbox-wtf-favicon-plugin",
+
+    async transformIndexHtml(_html, _ctx) {
+      const svg = await fs.readFile(path.join(__dirname, "src", "logo.svg"), "utf-8");
+      const dataUri = optimize(svg, { multipass: true, datauri: "base64" }).data;
+      return [{ tag: "link", attrs: { rel: "icon", type: "image/svg+xml", href: dataUri } }];
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte(), viteSingleFile(), generateHeadersPlugin()],
+  plugins: [svelte(), viteSingleFile(), generateHeadersPlugin(), faviconPlugin()],
   build: {
     assetsInlineLimit: 0,
   },

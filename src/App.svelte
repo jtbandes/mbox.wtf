@@ -2,7 +2,6 @@
   import { fade } from "svelte/transition";
   import { Analyzer } from "./Analyzer.svelte";
   import { formatSize } from "./formatSize";
-  import logoSvgUrl from "./logo.svg";
 
   const analyzer = new Analyzer();
 
@@ -46,11 +45,6 @@
     filteredResults && filteredResults.reduce((acc, [, size]) => acc + size, 0),
   );
 </script>
-
-<svelte:head>
-  <link rel="icon" type="image/svg+xml" href={logoSvgUrl} />
-  <link rel="mask-icon" href={logoSvgUrl} color="#000000" />
-</svelte:head>
 
 <div class="wrapper">
   {#if analyzer.progress != undefined && analyzer.progress !== 1}
