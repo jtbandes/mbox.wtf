@@ -49,7 +49,7 @@ function decodeQuotedPrintable(str: string, decoders: Map<string, TextDecoder>):
 const NAME_WITH_ADDRESS_REGEX = /^\s*"?(.+?)"?\s*<([^@>]+@[^>]+)>\s*$/i;
 
 export async function* readMessages(
-  linesReader: AsyncIterable<ReadLinesValue>,
+  linesReader: AsyncIterable<ReadLinesValue> | Iterable<ReadLinesValue>,
 ): AsyncGenerator<ReadMessagesValue> {
   const decoders = new Map<string, TextDecoder>();
   let firstMessage = true;

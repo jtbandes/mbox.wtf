@@ -1,5 +1,6 @@
 import type { AnalyzerMessageFromWorker, AnalyzerMessageToWorker } from "./Analyzer.worker";
 import AnalyzerWorker from "./Analyzer.worker?worker&inline";
+import { DEMO_FILE_SIZE_ESTIMATE } from "./demo";
 
 type AnalyzerResult = {
   sizesBySender: [sender: string, totalSize: number][];
@@ -8,10 +9,11 @@ type AnalyzerResult = {
 /** Manages a worker thread that parses an mbox file asynchronously. */
 export class Analyzer {
   #worker: Worker | undefined;
-  #totalSize = 0;
+  #totalSizeEstimate = 0;
   #startTime = 0;
-  #running = false;
+  #running = $state(false);
 
+  running = $derived(this.#running);
   /** 0-1 indicating current progress */
   progress = $state<number | undefined>();
   /** Parsing speed in bytes per second */
@@ -38,7 +40,7 @@ export class Analyzer {
         const msg = event.data as AnalyzerMessageFromWorker;
         switch (msg.op) {
           case "progress": {
-            this.progress = msg.bytesRead / this.#totalSize;
+            this.progress = msg.done ? 1 : msg.bytesRead / this.#totalSizeEstimate;
             const elapsed = performance.now() - this.#startTime;
             this.avgBytesPerSec = (msg.bytesRead / elapsed) * 1000;
             this.elapsed = elapsed;
@@ -67,6 +69,14 @@ export class Analyzer {
   }
 
   run(file: File) {
+    this.#run({ op: "start", file }, file.size);
+  }
+
+  runDemo() {
+    this.#run({ op: "start-demo" }, DEMO_FILE_SIZE_ESTIMATE);
+  }
+
+  #run(msg: AnalyzerMessageToWorker, sizeEstimate: number) {
     if (this.#running) {
       throw new Error("Analyzer is already running");
     }
@@ -75,9 +85,9 @@ export class Analyzer {
     }
     this.#reset();
     this.#running = true;
-    this.#totalSize = file.size;
+    this.#totalSizeEstimate = sizeEstimate;
 
     this.#startTime = performance.now();
-    this.#worker.postMessage({ op: "start", file } satisfies AnalyzerMessageToWorker);
+    this.#worker.postMessage(msg);
   }
 }

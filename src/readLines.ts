@@ -1,5 +1,5 @@
 export type ReadLinesValue = {
-  lines: string[];
+  lines: readonly string[];
   bytesRead: number;
 };
 

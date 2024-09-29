@@ -2,6 +2,7 @@
   import { fade } from "svelte/transition";
   import { Analyzer } from "./Analyzer.svelte";
   import { formatSize } from "./formatSize";
+  import { DEMO_FILE_NAME } from "./demo";
 
   const analyzer = new Analyzer();
 
@@ -12,6 +13,12 @@
       analyzer.run(fileInput.files[0]);
       selectedFileName = fileInput.files[0].name;
     }
+  }
+
+  function runDemo(event: Event) {
+    event.preventDefault();
+    analyzer.runDemo();
+    selectedFileName = DEMO_FILE_NAME;
   }
 
   let search = $state("");
@@ -83,10 +90,20 @@
     <div class="input-bar">
       <label>
         Select a .mbox file:
-        <button onclick={() => fileInput?.click()}>Choose File</button>
+        <button onclick={() => fileInput?.click()} disabled={analyzer.running}>Choose File</button>
         <span class="filename">{selectedFileName}</span>
-        <input type="file" bind:this={fileInput} onchange={handleChange} accept=".mbox" />
+        <input
+          type="file"
+          bind:this={fileInput}
+          onchange={handleChange}
+          accept=".mbox"
+          disabled={analyzer.running}
+        />
       </label>
+      {#if selectedFileName == undefined}
+        <!-- svelte-ignore a11y_invalid_attribute -->
+        <span>Or, <a href="#" onclick={runDemo}><strong>try a demo!</strong></a></span>
+      {/if}
       {#if analyzer.progress != undefined && analyzer.progress !== 1}
         <span class="speed">
           {(analyzer.progress * 100).toFixed(1)}% ({formatSize(analyzer.avgBytesPerSec ?? 0)}/s)
@@ -228,6 +245,11 @@
   }
   tr:hover td {
     background-color: var(--theme-hover-bg);
+  }
+  .error {
+    border: 1px solid rgb(235, 174, 174);
+    background-color: rgb(255, 240, 240);
+    padding: 0.5em 0.8em;
   }
   @media (prefers-color-scheme: dark) {
     header {

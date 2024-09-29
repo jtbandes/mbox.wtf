@@ -58,17 +58,20 @@ button {
   font-family: inherit;
   background-color: var(--theme-control-bg);
 }
-button:hover {
+button:not([disabled]):hover {
   border-color: var(--theme-hover-border);
   background-color: var(--theme-hover-bg);
 }
-button:active {
+button:not([disabled]):active {
   background-color: var(--theme-active-bg);
 }
-button:focus,
-button:focus-visible {
+button:not([disabled]):focus,
+button:not([disabled]):focus-visible {
   outline: none;
   border-color: var(--theme-primary);
+}
+button[disabled] {
+  opacity: 0.5;
 }
 
 input[type="text"] {
