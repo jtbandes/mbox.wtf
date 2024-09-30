@@ -1,6 +1,6 @@
 import type { ReadLinesValue } from "./readLines";
 
-export const DEMO_FILE_SIZE_ESTIMATE = 3 * 1024 * 1024 * 1024; // 5GB
+export const DEMO_FILE_SIZE_ESTIMATE = 3 * 1024 * 1024 * 1024; // 3GB
 export const DEMO_FILE_NAME = "demo.mbox";
 
 // Generated with:
@@ -31,7 +31,7 @@ const DEMO_SENDERS = [
 const LOREM_IPSUM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-const BYTES_PER_CHUNK = 10 * 1024 * 1024; // 1MB
+const BYTES_PER_CHUNK = 10 * 1024 * 1024; // 10MB
 
 export function* generateDemoLines(): Iterable<ReadLinesValue> {
   let totalBytes = 0;

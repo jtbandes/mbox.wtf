@@ -20,6 +20,9 @@
   --theme-box-bg: #dce6fc;
   --theme-box-border: #9db4e6;
   --theme-opacity-disabled: 0.7;
+  --theme-accent-dark: #5c028c;
+  --theme-accent: #8b24c3;
+  --theme-accent-light: #cd74fd;
 }
 
 a {
@@ -106,6 +109,10 @@ p {
     --theme-hover-bg: #383838;
     --theme-box-bg: #222a3c;
     --theme-box-border: #646e84;
+
+    --theme-accent-dark: #a738e3;
+    --theme-accent: #cd74fd;
+    --theme-accent-light: #e0a6ff;
   }
   a {
     color: #64a3ff;

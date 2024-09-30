@@ -102,7 +102,9 @@
       </label>
       {#if selectedFileName == undefined}
         <!-- svelte-ignore a11y_invalid_attribute -->
-        <span>Or, <a href="#" onclick={runDemo}><strong>try a demo!</strong></a></span>
+        <span>
+          Or, <a href="#" onclick={runDemo} class="try-demo-link"><strong>try a demo!</strong> </a>
+        </span>
       {/if}
       {#if analyzer.progress != undefined && analyzer.progress !== 1}
         <span class="speed">
@@ -113,7 +115,7 @@
       {/if}
     </div>
     {#if analyzer.error != undefined}
-      <div class="error">{analyzer.error}</div>
+      <aside class="error">{analyzer.error}</aside>
     {/if}
     <div class="search-bar">
       <input
@@ -247,13 +249,49 @@
     background-color: var(--theme-hover-bg);
   }
   .error {
-    border: 1px solid rgb(235, 174, 174);
-    background-color: rgb(255, 240, 240);
+    border: 1px solid #ebaeae;
+    background-color: #fff0f0;
     padding: 0.5em 0.8em;
+    font-weight: bold;
+  }
+  .try-demo-link {
+    color: var(--theme-accent-dark);
+    animation: shimmer 2s linear infinite;
+  }
+  .try-demo-link:hover {
+    animation: none;
+  }
+  @keyframes shimmer {
+    0% {
+      background: linear-gradient(
+          -15deg,
+          var(--theme-accent) 0 33%,
+          var(--theme-accent-light),
+          var(--theme-accent) 66% 100%
+        )
+        top / 100% 500%;
+      background-clip: text;
+      color: transparent;
+    }
+    100% {
+      background: linear-gradient(
+          -15deg,
+          var(--theme-accent) 0 33%,
+          var(--theme-accent-light),
+          var(--theme-accent) 66% 100%
+        )
+        bottom / 100% 500%;
+      background-clip: text;
+      color: transparent;
+    }
   }
   @media (prefers-color-scheme: dark) {
     header {
       background: rgba(36, 36, 36, 0.9);
+    }
+    .error {
+      border: 1px solid #d84848;
+      background-color: #562020;
     }
   }
 </style>
