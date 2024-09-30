@@ -14,3 +14,7 @@ mbox.wtf processes your data locally and doesn’t send it anywhere. In fact, _i
 mbox.wtf is structured as a single HTML file, and the [CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy) is locked down to disallow any connections whatsoever. Visit the [CSP Evaluator](https://csp-evaluator.withgoogle.com/?csp=https://mbox.wtf) to validate the website’s CSP for yourself. You can also try opening your browser’s dev tools and trying to run `fetch("")` — this should fail, demonstrating that the browser prevents the website from making any connections.
 
 </details>
+
+## Related projects
+
+- https://github.com/chadaustin/gmail-mbox-analyzer
